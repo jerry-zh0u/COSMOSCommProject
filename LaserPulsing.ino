@@ -1,52 +1,35 @@
-#define ONDELAY 5
-#define OFFDELAY 2
+#include <SoftwareSerial.h>
 
-String s;
-bool read = false;
+
+SoftwareSerial mySerial[3] = {SoftwareSerial(2, 3), SoftwareSerial(4, 5), SoftwareSerial(6, 7)};
+
 int p = 0;
-int interval = 5;
+bool read[3] = {false, false, false}; 
 
-void laserSend(int pulse){
-  for(int i = 8; i >= 0; i--){
-    if((pulse & (1 << i)) == 0){
-      digitalWrite(2, LOW);
-    }else{
-      digitalWrite(2, HIGH);
-    }
-    delay(ONDELAY);
-    digitalWrite(2, LOW);
-    // delay(OFFDELAY);
-  }
-}
-
-void sendStart(){ //SEND 111111101
-  for(int i = 8; i >= 0; i--){
-    if(i == 1){
-      digitalWrite(2, LOW);
-    }else{
-      digitalWrite(2, HIGH);
-    }
-    delay(ONDELAY);
-  }
-}
-
-void sendEnd(){  //SEND 111111111
-  for(int i = 8; i >= 0; i--){
-    digitalWrite(2, HIGH);
-    delay(ONDELAY);
-  }
-}
+String s[3];
 
 void setup() {
-  Serial.begin(300);
-  // p = 0;
-  
-  // //LASER DIODE
-  // pinMode(1, OUTPUT);
-  // digitalWrite(1, LOW); 
-  // delay(10000);
+  Serial.begin(9600); 
+  for(int i = 0; i < 3; i ++){
+    mySerial[i].begin(300);
+  }
 }
 
 void loop() {
-  Serial.write("hello world");
+  for(int i = 0; i < 3; i++){
+    Serial.print("Please input a message for Laser "); Serial.print(i); Serial.println(":");
+    while(!Serial.available() && !read[i]){
+      continue;
+    }
+    if(!read[i]){
+      s[i] = Serial.readString();
+      read[i] = true;
+    }
+  }
+  for(int i = 0; i < 3; i++){
+    mySerial[i].println(s[i]);
+    Serial.print("Word "); Serial.print(i); Serial.println(": ");
+    Serial.println(s[i]);
+    read[i] = false;
+  }
 }
